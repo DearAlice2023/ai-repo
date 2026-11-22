@@ -1,0 +1,15 @@
+﻿# ---- 不纳入公开仓库 ----
+# DSH 沙箱内部 ACL 备份/报告，与代码无关
+_dsh_acl_reports/
+
+# 含真实交易记录与个人盈亏数据（trades.csv / REPORT.md），公开仓库不收录
+股票分析/
+
+# 通用
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db

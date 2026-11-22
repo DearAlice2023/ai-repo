@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0a0d14">
+  <title>时间计数器</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='55' r='38' fill='none' stroke='%235eead4' stroke-width='7'/%3E%3Cpath d='M50 35v22l14 9' fill='none' stroke='%23818cf8' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M38 10h24' stroke='%235eead4' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+  </div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12.5" r="8.5"></circle>
+            <path d="M12 8v4.5l3 2"></path>
+            <path d="M9 2h6"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>时间计数器</h1>
+          <p>把每一秒，都看得见</p>
+        </div>
+      </div>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="切换主题" title="切换主题">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"></path>
+        </svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="计时模式">
+      <button class="tab is-active" id="tab-stopwatch" type="button" role="tab" aria-selected="true" aria-controls="panel-stopwatch" data-panel="stopwatch">秒表</button>
+      <button class="tab" id="tab-countdown" type="button" role="tab" aria-selected="false" aria-controls="panel-countdown" data-panel="countdown" tabindex="-1">倒计时</button>
+      <button class="tab" id="tab-date" type="button" role="tab" aria-selected="false" aria-controls="panel-date" data-panel="date" tabindex="-1">日期计数</button>
+      <button class="tab" id="tab-loop" type="button" role="tab" aria-selected="false" aria-controls="panel-loop" data-panel="loop" tabindex="-1">每日循环</button>
+    </nav>
+
+    <section class="panel is-active" id="panel-stopwatch" role="tabpanel" aria-labelledby="tab-stopwatch">
+      <div class="card stopwatch-card">
+        <div class="eyebrow">秒表</div>
+        <div class="display" id="swDisplay">00:00.00</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="swStart" type="button">开始</button>
+          <button class="btn" id="swLap" type="button" disabled>计次</button>
+          <button class="btn" id="swReset" type="button" disabled>重置</button>
+        </div>
+        <p class="kbd-hint">按 <kbd>空格</kbd> 开始 / 暂停</p>
+      </div>
+
+      <div class="card laps-card" id="lapsCard" hidden>
+        <div class="card-head">
+          <h2>计次记录</h2>
+          <span id="lapCount">0 次</span>
+        </div>
+        <div class="lap-head" aria-hidden="true">
+          <span>#</span><span>单圈</span><span>总计</span>
+        </div>
+        <div class="lap-list" id="lapList"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-countdown" role="tabpanel" aria-labelledby="tab-countdown">
+      <div class="card countdown-card" id="countdownCard">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 300 300" aria-hidden="true">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#5eead4"></stop>
+                <stop offset="100%" stop-color="#818cf8"></stop>
+              </linearGradient>
+            </defs>
+            <circle class="ring-track" cx="150" cy="150" r="132"></circle>
+            <circle class="ring-progress" id="ringProgress" cx="150" cy="150" r="132"></circle>
+          </svg>
+          <div class="ring-center">
+            <div class="cd-display" id="cdDisplay" aria-live="off">05:00</div>
+            <div class="cd-status" id="cdStatus">准备就绪</div>
+          </div>
+        </div>
+
+        <div class="duration-inputs" id="cdInputs">
+          <label class="dur-field"><span>时</span><input id="cdHours" type="number" min="0" max="99" step="1" value="0" inputmode="numeric" autocomplete="off"></label>
+          <span class="dur-sep">:</span>
+          <label class="dur-field"><span>分</span><input id="cdMinutes" type="number" min="0" max="59" step="1" value="5" inputmode="numeric" autocomplete="off"></label>
+          <span class="dur-sep">:</span>
+          <label class="dur-field"><span>秒</span><input id="cdSeconds" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" autocomplete="off"></label>
+        </div>
+
+        <div class="preset-row" id="cdPresets">
+          <button class="chip" type="button" data-seconds="60">1 分钟</button>
+          <button class="chip" type="button" data-seconds="180">3 分钟</button>
+          <button class="chip" type="button" data-seconds="300">5 分钟</button>
+          <button class="chip" type="button" data-seconds="600">10 分钟</button>
+          <button class="chip" type="button" data-seconds="1500">25 分钟</button>
+          <button class="chip" type="button" data-seconds="3600">1 小时</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="cdStart" type="button">开始</button>
+          <button class="btn" id="cdReset" type="button" disabled>重置</button>
+        </div>
+        <p class="hint" id="cdHint"></p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-date" role="tabpanel" aria-labelledby="tab-date">
+      <div class="card date-picker-card">
+        <label class="field-label" for="dateTarget">目标日期与时间</label>
+        <input class="text-input" id="dateTarget" type="datetime-local" step="60">
+        <div class="preset-row" id="datePresets">
+          <button class="chip" type="button" data-preset="newyear">下一个元旦</button>
+          <button class="chip" type="button" data-preset="tomorrow">明天零点</button>
+          <button class="chip" type="button" data-preset="week">一周后</button>
+          <button class="chip" type="button" data-preset="month">一个月后</button>
+        </div>
+      </div>
+
+      <div class="card date-card">
+        <div class="date-direction" id="dateDirection">距离目标还有</div>
+        <div class="days-big"><span id="daysNumber">0</span><span class="days-unit">天</span></div>
+        <div class="date-target-text" id="dateTargetText"></div>
+        <div class="date-grid" aria-label="精确时间差">
+          <div class="date-cell"><b id="dYears">0</b><span>年</span></div>
+          <div class="date-cell"><b id="dMonths">0</b><span>月</span></div>
+          <div class="date-cell"><b id="dDays">0</b><span>天</span></div>
+          <div class="date-cell"><b id="dHours">00</b><span>时</span></div>
+          <div class="date-cell"><b id="dMinutes">00</b><span>分</span></div>
+          <div class="date-cell"><b id="dSeconds">00</b><span>秒</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-loop" role="tabpanel" aria-labelledby="tab-loop">
+      <div class="sub-tabs" role="tablist" aria-label="每日循环模式">
+        <button class="sub-tab is-active" id="subtab-schedule" type="button" role="tab" aria-selected="true" aria-controls="sub-schedule" data-sub="schedule">每日日程</button>
+        <button class="sub-tab" id="subtab-pomodoro" type="button" role="tab" aria-selected="false" aria-controls="sub-pomodoro" data-sub="pomodoro" tabindex="-1">专注循环</button>
+      </div>
+
+      <div class="sub-panel is-active" id="sub-schedule" role="tabpanel" aria-labelledby="subtab-schedule">
+        <div class="card sched-hero">
+          <div class="loop-eyebrow"><span id="schedEyebrowLabel">今日日程</span><span class="loop-dot">·</span><span id="schedDate">--</span></div>
+          <div class="loop-title" id="schedHeroTitle">还没有日程</div>
+          <div class="loop-count" id="schedHeroCount">--:--:--</div>
+          <div class="loop-meta" id="schedHeroMeta">添加每天固定进行的工作</div>
+          <div class="sched-progress">
+            <div class="sched-progress-head"><span id="schedProgressLabel">今日进度</span><b id="schedProgressText">0 / 0</b></div>
+            <div class="bar"><i id="schedProgressBar"></i></div>
+          </div>
+        </div>
+
+        <div class="cycle-bar" id="schedCycleBar" role="group" aria-label="周期天数" hidden></div>
+
+        <div class="card sched-form-card">
+          <div class="card-head"><h2>添加工作</h2><span id="schedFormHint">可随时修改</span></div>
+          <form id="schedForm" class="sched-form" autocomplete="off" novalidate>
+            <label class="field">
+              <span>工作名称</span>
+              <input id="schedName" type="text" maxlength="24" placeholder="例如：写周报" required>
+            </label>
+            <div class="sched-form-row">
+              <label class="field">
+                <span>开始时间</span>
+                <input id="schedTime" type="time" required>
+              </label>
+              <label class="field">
+                <span>时长（分钟）</span>
+                <input id="schedDuration" type="number" min="1" max="720" step="5" value="60" required>
+              </label>
+              <button class="btn btn-primary" type="submit">添加</button>
+            </div>
+            <p class="form-msg" id="schedMsg" role="status"></p>
+          </form>
+          <label class="switch-row sched-cycle-switch" for="schedCycle">
+            <span>按天轮换<small id="schedCycleHint">每天只显示当天分组的工作，按周期自动滚动</small></span>
+            <input id="schedCycle" type="checkbox">
+            <i class="switch" aria-hidden="true"></i>
+          </label>
+          <div class="cycle-config" id="schedCycleConfig" hidden>
+            <label class="cycle-days-field" for="schedCycleDays">周期天数
+              <input id="schedCycleDays" type="number" min="2" max="14" step="1" value="4">
+              <span>天</span>
+            </label>
+            <span class="cycle-start" id="schedCycleStartHint"></span>
+            <button class="link-btn" id="schedCycleReset" type="button">从今天重新开始</button>
+          </div>
+        </div>
+
+        <div class="card sched-list-card">
+          <div class="card-head"><h2 id="schedListTitle">每日工作</h2><span id="schedCount">0 项</span></div>
+          <ul class="sched-list" id="schedList"></ul>
+          <div class="empty-state" id="schedEmpty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+              <path d="M8 3v4M16 3v4M3 10h18"></path>
+              <path d="M8 14h3M13 14h3M8 17.5h3"></path>
+            </svg>
+            <p><span id="schedEmptyTitle">还没有安排</span><br><span id="schedEmptyHint">添加一项每天固定进行的工作吧</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-panel" id="sub-pomodoro" role="tabpanel" aria-labelledby="subtab-pomodoro">
+        <div class="card countdown-card pomo-card" id="pomoCard">
+          <div class="eyebrow">工作 · 休息循环</div>
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 300 300" aria-hidden="true">
+              <defs>
+                <linearGradient id="ringGradPomo" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#5eead4"></stop>
+                  <stop offset="100%" stop-color="#818cf8"></stop>
+                </linearGradient>
+                <linearGradient id="ringGradBreak" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#34d399"></stop>
+                  <stop offset="100%" stop-color="#22d3ee"></stop>
+                </linearGradient>
+              </defs>
+              <circle class="ring-track" cx="150" cy="150" r="132"></circle>
+              <circle class="ring-progress pomo-progress" id="pomoRing" cx="150" cy="150" r="132"></circle>
+            </svg>
+            <div class="ring-center">
+              <div class="cd-display" id="pomoDisplay">25:00</div>
+              <div class="cd-status" id="pomoStatus">准备开始</div>
+              <div class="pomo-round" id="pomoRound">第 1 / 4 轮</div>
+            </div>
+          </div>
+          <div class="pomo-dots" id="pomoDots" aria-hidden="true"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="pomoStart" type="button">开始</button>
+            <button class="btn" id="pomoSkip" type="button" disabled>跳过</button>
+            <button class="btn" id="pomoReset" type="button" disabled>重置</button>
+          </div>
+          <p class="hint" id="pomoHint">今日已完成 0 轮专注</p>
+        </div>
+
+        <div class="card pomo-settings">
+          <div class="card-head"><h2>循环设置</h2><span id="pomoTotal">一组约 1 小时 55 分</span></div>
+          <div class="pomo-fields">
+            <label class="dur-field"><span>专注（分）</span><input id="pomoFocusInput" type="number" min="1" max="180" step="1" value="25" inputmode="numeric" autocomplete="off"></label>
+            <label class="dur-field"><span>休息（分）</span><input id="pomoBreakInput" type="number" min="1" max="60" step="1" value="5" inputmode="numeric" autocomplete="off"></label>
+            <label class="dur-field"><span>轮数</span><input id="pomoRoundsInput" type="number" min="1" max="12" step="1" value="4" inputmode="numeric" autocomplete="off"></label>
+          </div>
+          <div class="preset-row" id="pomoPresets">
+            <button class="chip" type="button" data-focus="25" data-break="5">经典 25/5</button>
+            <button class="chip" type="button" data-focus="45" data-break="10">45/10</button>
+            <button class="chip" type="button" data-focus="50" data-break="10">50/10</button>
+            <button class="chip" type="button" data-focus="90" data-break="20">90/20</button>
+          </div>
+          <label class="switch-row" for="pomoAuto">
+            <span>自动进入下一阶段</span>
+            <input id="pomoAuto" type="checkbox" checked>
+            <i class="switch" aria-hidden="true"></i>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span id="clockNow">--:--:--</span>
+      <span>本地运行 · 数据保存在此浏览器</span>
+    </footer>
+  </main>
+
+  <dialog class="edit-dialog" id="schedEditDialog" aria-labelledby="schedEditTitle">
+    <form class="edit-form" id="schedEditForm" novalidate>
+      <div class="edit-head">
+        <h2 id="schedEditTitle">修改工作</h2>
+        <button class="edit-close" id="schedEditClose" type="button" aria-label="关闭">×</button>
+      </div>
+      <label class="field">
+        <span>工作名称</span>
+        <input id="schedEditName" type="text" maxlength="24" required>
+      </label>
+      <div class="edit-row">
+        <label class="field">
+          <span>开始时间</span>
+          <input id="schedEditTime" type="time" required>
+        </label>
+        <label class="field">
+          <span>时长（分钟）</span>
+          <input id="schedEditDuration" type="number" min="1" max="720" step="5" required>
+        </label>
+      </div>
+      <label class="field" id="schedEditDayField" hidden>
+        <span>安排到第几天</span>
+        <select id="schedEditDay"></select>
+        <small class="field-note">同一天可以安排多项工作</small>
+      </label>
+      <p class="form-msg" id="schedEditMsg" role="status"></p>
+      <div class="edit-actions">
+        <button class="btn" id="schedEditCancel" type="button">取消</button>
+        <button class="btn btn-primary" type="submit">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span id="toastText"></span>
+    <button id="toastUndo" type="button">撤销</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
