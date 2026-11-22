@@ -43,13 +43,15 @@
     </header>
 
     <nav class="tabs" role="tablist" aria-label="计时模式">
-      <button class="tab is-active" id="tab-stopwatch" type="button" role="tab" aria-selected="true" aria-controls="panel-stopwatch" data-panel="stopwatch">秒表</button>
-      <button class="tab" id="tab-countdown" type="button" role="tab" aria-selected="false" aria-controls="panel-countdown" data-panel="countdown" tabindex="-1">倒计时</button>
+      <button class="tab is-active" id="tab-loop" type="button" role="tab" aria-selected="true" aria-controls="panel-loop" data-panel="loop">每日任务</button>
       <button class="tab" id="tab-date" type="button" role="tab" aria-selected="false" aria-controls="panel-date" data-panel="date" tabindex="-1">日期计数</button>
-      <button class="tab" id="tab-loop" type="button" role="tab" aria-selected="false" aria-controls="panel-loop" data-panel="loop" tabindex="-1">每日循环</button>
+      <button class="tab" id="tab-stopwatch" type="button" role="tab" aria-selected="false" aria-controls="panel-stopwatch" data-panel="stopwatch" tabindex="-1">秒表</button>
+      <button class="tab" id="tab-countdown" type="button" role="tab" aria-selected="false" aria-controls="panel-countdown" data-panel="countdown" tabindex="-1">倒计时</button>
+      <button class="tab" id="tab-stats" type="button" role="tab" aria-selected="false" aria-controls="panel-stats" data-panel="stats" tabindex="-1">统计</button>
+      <button class="tab tab-ai" id="tab-ai" type="button" role="tab" aria-selected="false" aria-controls="panel-ai" data-panel="ai" tabindex="-1">AI<span class="ai-spark" aria-hidden="true">✦</span></button>
     </nav>
 
-    <section class="panel is-active" id="panel-stopwatch" role="tabpanel" aria-labelledby="tab-stopwatch">
+    <section class="panel" id="panel-stopwatch" role="tabpanel" aria-labelledby="tab-stopwatch">
       <div class="card stopwatch-card">
         <div class="eyebrow">秒表</div>
         <div class="display" id="swDisplay">00:00.00</div>
@@ -142,9 +144,30 @@
           <div class="date-cell"><b id="dSeconds">00</b><span>秒</span></div>
         </div>
       </div>
+
+      <div class="card special-card">
+        <div class="card-head"><h2>特殊日期与备注</h2><span id="specialCount">0 条</span></div>
+        <form id="specialForm" class="special-form" autocomplete="off" novalidate>
+          <label class="field">
+            <span>日期</span>
+            <input id="specialDate" type="date" required>
+          </label>
+          <label class="field">
+            <span>备注</span>
+            <input id="specialNote" type="text" maxlength="40" placeholder="例如：妈妈生日" required>
+          </label>
+          <button class="btn btn-primary" id="specialSubmit" type="submit">添加</button>
+          <button class="btn" id="specialCancel" type="button" hidden>取消</button>
+        </form>
+        <p class="form-msg" id="specialMsg" role="status"></p>
+        <div class="special-list" id="specialList"></div>
+        <div class="empty-state" id="specialEmpty">
+          <p>还没有特殊日期<br><span>添加生日、纪念日或重要截止日，提前 3 天、1 天和当天会提醒</span></p>
+        </div>
+      </div>
     </section>
 
-    <section class="panel" id="panel-loop" role="tabpanel" aria-labelledby="tab-loop">
+    <section class="panel is-active" id="panel-loop" role="tabpanel" aria-labelledby="tab-loop">
       <div class="sub-tabs" role="tablist" aria-label="每日循环模式">
         <button class="sub-tab is-active" id="subtab-schedule" type="button" role="tab" aria-selected="true" aria-controls="sub-schedule" data-sub="schedule">每日日程</button>
         <button class="sub-tab" id="subtab-pomodoro" type="button" role="tab" aria-selected="false" aria-controls="sub-pomodoro" data-sub="pomodoro" tabindex="-1">专注循环</button>
@@ -162,41 +185,22 @@
           </div>
         </div>
 
-        <div class="cycle-bar" id="schedCycleBar" role="group" aria-label="周期天数" hidden></div>
+        <div class="date-nav">
+          <button class="date-nav-btn" id="schedPrevWeek" type="button" aria-label="上一周">‹</button>
+          <div class="date-strip" id="schedDateStrip"></div>
+          <button class="date-nav-btn" id="schedNextWeek" type="button" aria-label="下一周">›</button>
+        </div>
+        <div class="date-week-row">
+          <span id="schedWeekLabel"></span>
+          <button class="link-btn" id="schedTodayBtn" type="button">回到今天</button>
+        </div>
 
-        <div class="card sched-form-card">
-          <div class="card-head"><h2>添加工作</h2><span id="schedFormHint">可随时修改</span></div>
-          <form id="schedForm" class="sched-form" autocomplete="off" novalidate>
-            <label class="field">
-              <span>工作名称</span>
-              <input id="schedName" type="text" maxlength="24" placeholder="例如：写周报" required>
-            </label>
-            <div class="sched-form-row">
-              <label class="field">
-                <span>开始时间</span>
-                <input id="schedTime" type="time" required>
-              </label>
-              <label class="field">
-                <span>时长（分钟）</span>
-                <input id="schedDuration" type="number" min="1" max="720" step="5" value="60" required>
-              </label>
-              <button class="btn btn-primary" type="submit">添加</button>
-            </div>
-            <p class="form-msg" id="schedMsg" role="status"></p>
-          </form>
-          <label class="switch-row sched-cycle-switch" for="schedCycle">
-            <span>按天轮换<small id="schedCycleHint">每天只显示当天分组的工作，按周期自动滚动</small></span>
-            <input id="schedCycle" type="checkbox">
-            <i class="switch" aria-hidden="true"></i>
-          </label>
-          <div class="cycle-config" id="schedCycleConfig" hidden>
-            <label class="cycle-days-field" for="schedCycleDays">周期天数
-              <input id="schedCycleDays" type="number" min="2" max="14" step="1" value="4">
-              <span>天</span>
-            </label>
-            <span class="cycle-start" id="schedCycleStartHint"></span>
-            <button class="link-btn" id="schedCycleReset" type="button">从今天重新开始</button>
+        <div class="card sched-add-card">
+          <div class="sched-add-text">
+            <h2>工作安排</h2>
+            <p>支持每天、每周几、每月几号重复</p>
           </div>
+          <button class="btn btn-primary" id="schedAddBtn" type="button">＋ 添加工作</button>
         </div>
 
         <div class="card sched-list-card">
@@ -268,6 +272,108 @@
       </div>
     </section>
 
+    <section class="panel" id="panel-stats" role="tabpanel" aria-labelledby="tab-stats">
+      <div class="stats-grid">
+        <div class="card stat-card">
+          <span class="stat-label">今日完成率</span>
+          <b id="statTodayRate">—</b>
+          <small id="statTodayDetail">今天没有安排</small>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">近 7 天完成</span>
+          <b id="statWeekCount">0</b>
+          <small>次</small>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">连续打卡</span>
+          <b id="statStreak">0</b>
+          <small>天</small>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">累计完成</span>
+          <b id="statTotal">0</b>
+          <small>次</small>
+        </div>
+      </div>
+
+      <div class="card stats-chart-card">
+        <div class="card-head">
+          <h2>完成趋势</h2>
+          <div class="range-tabs">
+            <button class="is-active" id="statsRange7" type="button" data-range="7">7 天</button>
+            <button id="statsRange30" type="button" data-range="30">30 天</button>
+          </div>
+        </div>
+        <div class="stats-chart" id="statsChart"></div>
+      </div>
+
+      <div class="card stats-rank-card">
+        <div class="card-head"><h2>任务完成排行</h2><span>累计次数</span></div>
+        <div class="rank-list" id="statsRanking"></div>
+      </div>
+
+      <div class="card stats-recent-card">
+        <div class="card-head"><h2>最近完成</h2><span>最新 8 条</span></div>
+        <div class="recent-list" id="statsRecent"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-ai" role="tabpanel" aria-labelledby="tab-ai">
+      <div class="card ai-config-card">
+        <div class="card-head"><h2>AI 设置</h2><span>仅保存在本机</span></div>
+        <div class="ai-fields">
+          <label class="field">
+            <span>服务商</span>
+            <select id="aiProvider">
+              <option value="deepseek">DeepSeek</option>
+              <option value="openai">OpenAI</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>API Key</span>
+            <input id="aiKey" type="password" autocomplete="off" placeholder="sk-...">
+          </label>
+          <label class="field">
+            <span>Base URL</span>
+            <input id="aiBase" type="url" autocomplete="off" placeholder="https://api.deepseek.com/v1">
+          </label>
+          <label class="field">
+            <span>模型</span>
+            <input id="aiModel" type="text" autocomplete="off" placeholder="deepseek-chat">
+          </label>
+        </div>
+        <div class="ai-config-actions">
+          <button class="btn btn-primary" id="aiSave" type="button">保存设置</button>
+          <button class="btn" id="aiClear" type="button">清除 Key</button>
+          <label class="switch-row ai-context-switch" for="aiContext">
+            <span>带上今天的任务</span>
+            <input id="aiContext" type="checkbox" checked>
+            <i class="switch" aria-hidden="true"></i>
+          </label>
+        </div>
+        <p class="ai-warning">Key 只保存在此浏览器 localStorage，并直接发送到你填写的接口。纯前端页面无法隐藏密钥，请注意风险。如果请求失败，多半是 Base URL 或浏览器跨域限制；用本地 HTTP 服务打开页面通常可以解决。</p>
+      </div>
+
+      <div class="card ai-chat-card">
+        <div class="card-head"><h2>AI 助手</h2><button class="link-btn" id="aiClearChat" type="button">清空对话</button></div>
+        <div class="ai-chat" id="aiMessages">
+          <div class="ai-empty" id="aiEmpty">
+            <p>配置 Key 后，可以让 AI 帮你安排工作、复盘完成情况。</p>
+            <div class="ai-prompts">
+              <button type="button" data-prompt="帮我根据今天的任务，安排一下优先顺序">安排今天</button>
+              <button type="button" data-prompt="总结一下我最近的任务完成情况，并给出改进建议">复盘完成情况</button>
+            </div>
+          </div>
+        </div>
+        <div class="ai-input-row">
+          <textarea id="aiInput" rows="2" placeholder="问点什么…（Enter 发送，Shift+Enter 换行）"></textarea>
+          <button class="btn btn-primary" id="aiSend" type="button">发送</button>
+        </div>
+        <p class="hint" id="aiStatus"></p>
+      </div>
+    </section>
+
     <footer class="footer">
       <span id="clockNow">--:--:--</span>
       <span>本地运行 · 数据保存在此浏览器</span>
@@ -294,18 +400,45 @@
           <input id="schedEditDuration" type="number" min="1" max="720" step="5" required>
         </label>
       </div>
-      <label class="field" id="schedEditDayField" hidden>
-        <span>安排到第几天</span>
-        <select id="schedEditDay"></select>
-        <small class="field-note">同一天可以安排多项工作</small>
+      <label class="field">
+        <span>重复方式</span>
+        <select id="schedRepeatType">
+          <option value="daily">每天</option>
+          <option value="weekly">每周</option>
+          <option value="monthly">每月</option>
+          <option value="once">仅一次</option>
+        </select>
+      </label>
+      <label class="field" id="schedOnceDateField" hidden>
+        <span>仅在这一天</span>
+        <input id="schedOnceDate" type="date">
+      </label>
+      <div class="field" id="schedWeekdayField" hidden>
+        <span>星期几（可多选）</span>
+        <div class="weekday-picker" id="schedWeekdays">
+          <button type="button" data-weekday="1" aria-label="周一">一</button>
+          <button type="button" data-weekday="2" aria-label="周二">二</button>
+          <button type="button" data-weekday="3" aria-label="周三">三</button>
+          <button type="button" data-weekday="4" aria-label="周四">四</button>
+          <button type="button" data-weekday="5" aria-label="周五">五</button>
+          <button type="button" data-weekday="6" aria-label="周六">六</button>
+          <button type="button" data-weekday="7" aria-label="周日">日</button>
+        </div>
+      </div>
+      <label class="field" id="schedMonthDayField" hidden>
+        <span>每月几号</span>
+        <input id="schedMonthDays" type="text" placeholder="例如 1, 15, 28">
+        <small class="field-note">可写多个，用逗号分隔；没有 31 号的月份自动跳过</small>
       </label>
       <p class="form-msg" id="schedEditMsg" role="status"></p>
       <div class="edit-actions">
         <button class="btn" id="schedEditCancel" type="button">取消</button>
-        <button class="btn btn-primary" type="submit">保存</button>
+        <button class="btn btn-primary" id="schedEditSave" type="submit">保存</button>
       </div>
     </form>
   </dialog>
+
+  <div class="reminder-stack" id="reminderStack" aria-live="polite" aria-label="特殊日期提醒"></div>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden>
     <span id="toastText"></span>
