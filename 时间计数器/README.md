@@ -137,3 +137,7 @@
 | `preview-stats.png` | 统计页 |
 | `preview-ai.png` | AI 助手 |
 | `preview-focus.png` | 专注循环 |
+
+## 相关文章
+
+- [时间计数器：一个纯前端的每日任务、统计与 AI 时间管理工具（CSDN）](https://blog.csdn.net/2301_80923803/article/details/171198521)
